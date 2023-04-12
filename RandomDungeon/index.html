@@ -296,7 +296,10 @@
 						var xMove = Math.round(Math.random());
 						var yMove = Math.round(Math.random()); 
 						var newMx = Math.random() > 0.5 ? element.x + xMove : element.x - xMove;
-						var newMy = Math.random() > 0.5 ? element.y + yMove : element.y - yMove;
+						var newMy = 0;
+						// x沒有動再動y，總之避免怪物斜走
+						if(xMove === 0)
+							newMy = Math.random() > 0.5 ? element.y + yMove : element.y - yMove;
 		
 						if(newMy === player.y && newMx === player.x)
 						{
