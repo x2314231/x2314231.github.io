@@ -95,7 +95,7 @@
         }
 
         const player = {
-            x: Math.floor(width / 2),
+            x: 2,
             y: Math.floor(height / 2),
             hp: 100,
             atk: 10,
@@ -259,8 +259,7 @@
 		function PlayerMove(newX,newY,xWay,yWay)
 		{ 
 			// 清除迷霧
-			ClearMist(newX,newY,xWay,yWay);
-            
+			ClearMist(newX,newY,xWay,yWay); 
 			if (newX >= 0 && newX < width &&
                 newY >= 0 && newY < height && 
                 mapData[newY][newX] !== '#' && 
@@ -370,7 +369,9 @@
 			var roundArr = GetView(x,y,xWay,yWay);
 			
 			roundArr.forEach(e => {
-				if(map.children[e.y].children[e.x].classList.contains('mist'))
+				if(map.children[e.y] && 
+				   map.children[e.y].children[e.x] && 
+				   map.children[e.y].children[e.x].classList.contains('mist'))
 				{
 					map.children[e.y].children[e.x].classList.remove('mist'); 
 					switch (mapData[e.y][e.x])
