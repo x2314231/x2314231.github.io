@@ -160,37 +160,56 @@
 		
             let newX = player.x;
             let newY = player.y;
+			let xWay = 0;
+			let yWay = 0;
+			
             if (event.key === 'ArrowUp') {
                 newY--;
+				yWay--;
             } else if (event.key === 'ArrowDown') {
                 newY++;
+				yWay++;
             } else if (event.key === 'ArrowLeft') {
                 newX--;
+				xWay--;
             } else if (event.key === 'ArrowRight') {
                 newX++;
+				xWay++;
             } else if (event.key === 'Space') {
             }
 			
 			if (event.key === '2') {
                 newY++;
+				yWay++;
             } else if (event.key === '8') {
                 newY--;
+				yWay--;
             } else if (event.key === '4') {
                 newX--;
+				xWay--;
             } else if (event.key === '6') {
                 newX++;
+				xWay++;
             } else if (event.key === '9') {
 				newY--;
                 newX++;
+				yWay--;
+				xWay++;
             } else if (event.key === '7') {
 				newY--;
                 newX--;
+				yWay--;
+				xWay--;
             } else if (event.key === '3') {
 				newY++;
                 newX++;
+				yWay++;
+				xWay++;
             } else if (event.key === '1') {
 				newY++;
                 newX--;
+				yWay++;
+				xWay--;
             }  
 
             // 處理觸控螢幕
@@ -208,9 +227,11 @@
 
                 if ( Math.abs( xDiff ) > Math.abs( yDiff ) ) { 
                     if ( xDiff > touchSlideDistance ) {
-                        newX--;
+                        newX--; 
+						xWay--;
                     } else if( xDiff < -touchSlideDistance ){
-                        newX++;
+                        newX++; 
+						xWay++;
                     } else　{
                         return;
                     }                       
@@ -219,9 +240,11 @@
                 else {
                     
                     if ( yDiff > touchSlideDistance ) {
-                        newY--;
+                        newY--; 
+						yWay--;
                     } else if( yDiff < -touchSlideDistance ){ 
                         newY++;
+						yWay++;
                     } else　{
                         return;
                     }                                                                   
@@ -230,38 +253,14 @@
                 xDown = null;										
                 yDown = null;
             }
-			PlayerMove(newX,newY);
-        }
+			PlayerMove(newX,newY,xWay,yWay);
+        } 
 		
-		
-		function PlayerMove(newX,newY)
+		function PlayerMove(newX,newY,xWay,yWay)
 		{ 
-            // 清除迷霧
-            if(map.children[newY].children[newX].classList.contains('mist'))
-            {
-                map.children[newY].children[newX].classList.remove('mist'); 
-                switch (mapData[newY][newX])
-                {
-                    case '#':{
-                        map.children[newY].children[newX].classList.add('wall');
-                        break;
-                    }
-                    case 'T':{
-                        map.children[newY].children[newX].classList.add('treasure');
-                        return;
-                        break;
-                    }
-                    case 'M':{
-                        map.children[newY].children[newX].classList.add('monster');
-                        break;
-                    }
-                    case '.':{ 
-                        break;
-                    }
-                } 
-            }
+			// 清除迷霧
+			ClearMist(newX,newY,xWay,yWay);
             
-
 			if (newX >= 0 && newX < width &&
                 newY >= 0 && newY < height && 
                 mapData[newY][newX] !== '#' && 
@@ -325,6 +324,74 @@
 					}); 
 		}
 		
+		function GetRound(targetX,targety)
+		{
+			var roundArr = [
+				{x : targetX+1,y : targety}, 
+				{x : targetX+1,y : targety+1},
+				{x : targetX+1,y : targety-1},
+				{x : targetX,  y : targety+1},
+				{x : targetX,  y : targety+-1},
+				{x : targetX-1,y : targety}, 
+				{x : targetX-1,y : targety+1},
+				{x : targetX-1,y : targety-1} 
+			];
+			
+			return roundArr;
+		}
+		
+		function GetView(targetX,targety,xWay,yWay)
+		{
+			if(yWay === 0)
+			{
+				return [ 
+					{x : targetX+xWay, y : targety+1},
+					{x : targetX+xWay, y : targety},
+					{x : targetX+xWay, y : targety-1}, 
+					{x : targetX, y : targety},
+				];
+			}
+			else if(xWay === 0)
+			{
+				return [
+					{x : targetX+1, y : targety+yWay},
+					{x : targetX  , y : targety+yWay},
+					{x : targetX-1, y : targety+yWay}, 
+					{x : targetX  , y : targety},
+				];
+			} 
+		}
+		
+		function ClearMist(x,y,xWay,yWay)
+		{ 
+			var roundArr = GetView(x,y,xWay,yWay);
+			
+			roundArr.forEach(e => {
+				if(map.children[e.y].children[e.x].classList.contains('mist'))
+				{
+					map.children[e.y].children[e.x].classList.remove('mist'); 
+					switch (mapData[e.y][e.x])
+					{
+						case '#':{
+							map.children[e.y].children[e.x].classList.add('wall');
+							break;
+						}
+						case 'T':{
+							map.children[e.y].children[e.x].classList.add('treasure');
+							return;
+							break;
+						}
+						case 'M':{
+							map.children[e.y].children[e.x].classList.add('monster');
+							break;
+						}
+						case '.':{ 
+							break;
+						}
+					} 
+				}
+			}); 
+		}
     </script>
 </body>
 </html>
