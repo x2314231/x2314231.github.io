@@ -48,8 +48,8 @@
         const status = document.querySelector('#status');
         const log = document.querySelector('#log');
         const map = document.querySelector('#map');
-        const width = 20;
-        const height = 40;
+        const width = 40;
+        const height = 20;
         const mapData = [];
         const monsters = [];
         const treasures = [];
@@ -191,39 +191,43 @@
                 newX--;
             }  
 
-			if ( ! xDown || ! yDown ) {
-				return;
-			}
-
-			var xUp = event.touches[0].clientX;                                    
-			var yUp = event.touches[0].clientY;
-
-			var xDiff = xDown - xUp;
-			var yDiff = yDown - yUp;
-
-			if ( Math.abs( xDiff ) > Math.abs( yDiff ) ) { 
-				if ( xDiff > touchSlideDistance ) {
-					newX--;
-				} else if( xDiff < -touchSlideDistance ){
-					newX++;
-				} else　{
+            // 處理觸控螢幕
+            if(event.touches)
+            { 
+                if ( ! xDown || ! yDown ) {
                     return;
-                }                       
-                 
-			} 
-            else {
-                  
-				if ( yDiff > touchSlideDistance ) {
-					newY--;
-				} else if( yDiff < -touchSlideDistance ){ 
-					newY++;
-				} else　{
-                    return;
-                }                                                                   
-			} 
-		   
-			xDown = null;										
-            yDown = null;
+                }
+
+                var xUp = event.touches[0].clientX;                                    
+                var yUp = event.touches[0].clientY;
+
+                var xDiff = xDown - xUp;
+                var yDiff = yDown - yUp;
+
+                if ( Math.abs( xDiff ) > Math.abs( yDiff ) ) { 
+                    if ( xDiff > touchSlideDistance ) {
+                        newX--;
+                    } else if( xDiff < -touchSlideDistance ){
+                        newX++;
+                    } else　{
+                        return;
+                    }                       
+                    
+                } 
+                else {
+                    
+                    if ( yDiff > touchSlideDistance ) {
+                        newY--;
+                    } else if( yDiff < -touchSlideDistance ){ 
+                        newY++;
+                    } else　{
+                        return;
+                    }                                                                   
+                } 
+            
+                xDown = null;										
+                yDown = null;
+            }
 			PlayerMove(newX,newY);
         }
 		
