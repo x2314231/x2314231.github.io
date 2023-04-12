@@ -25,9 +25,13 @@
 			background-image: url("https://drive.google.com/uc?export=view&id=1-6HhmroiJrkPUw2LhiDY-nb46K-kUYSA");
 			animation:blink 1.9s infinite
         }
-		.baseGround{
+		.baseGround {
 			background-color:rgb(0,139,139);
 		}
+        .mist {
+            background-color: black;
+		    opacity: 0.5;
+        }
 		@keyframes blink {
 		 0% {
 		  opacity: 0;
@@ -48,7 +52,7 @@
         const status = document.querySelector('#status');
         const log = document.querySelector('#log');
         const map = document.querySelector('#map');
-        const width = 40;
+        const width = 20;
         const height = 20;
         const mapData = [];
         const monsters = [];
@@ -60,12 +64,11 @@
             const row = document.createElement('tr');
             for (let x = 0; x < width; x++) {
                 const cell = document.createElement('td');
+                cell.classList.add('mist');
                 if (Math.random() < 0.2) {
-                    mapData[y].push('#');
-                    cell.classList.add('wall'); 
+                    mapData[y].push('#');  
                 } else if (Math.random() < 0.1) {
-					mapData[y].push('M');
-                    cell.classList.add('monster');
+					mapData[y].push('M'); 
                     monsters.push({
                         x,
                         y,
@@ -74,8 +77,7 @@
                         def: Math.floor(Math.random() * 3)
                     });
                 } else if (Math.random() < 0.05) {
-                    mapData[y].push('T');
-                    cell.classList.add('treasure');
+                    mapData[y].push('T'); 
 					var treasureType = Math.random();   
 					treasures.push({
                         x,
@@ -85,7 +87,7 @@
                         def: treasureType <= 0.3 ? Math.floor(Math.random() * 3) : 0
                     });
                 } else {
-                    mapData[y].push('.');
+                    mapData[y].push('.'); 
                 }
                 row.appendChild(cell);
             }
@@ -100,7 +102,7 @@
             def: 0
         };
         updateStatus();
-        mapData[player.y][player.x] = 'P';
+        mapData[player.y][player.x] = 'P';  
         map.children[player.y].children[player.x].classList.add('player');
 
         function updateStatus() {
@@ -233,8 +235,37 @@
 		
 		
 		function PlayerMove(newX,newY)
-		{
-			if (newX >= 0 && newX < width && newY >= 0 && newY < height && mapData[newY][newX] !== '#') {
+		{ 
+            // 清除迷霧
+            if(map.children[newY].children[newX].classList.contains('mist'))
+            {
+                map.children[newY].children[newX].classList.remove('mist'); 
+                switch (mapData[newY][newX])
+                {
+                    case '#':{
+                        map.children[newY].children[newX].classList.add('wall');
+                        break;
+                    }
+                    case 'T':{
+                        map.children[newY].children[newX].classList.add('treasure');
+                        return;
+                        break;
+                    }
+                    case 'M':{
+                        map.children[newY].children[newX].classList.add('monster');
+                        break;
+                    }
+                    case '.':{ 
+                        break;
+                    }
+                } 
+            }
+            
+
+			if (newX >= 0 && newX < width &&
+                newY >= 0 && newY < height && 
+                mapData[newY][newX] !== '#' && 
+                !map.children[newY].children[newX].classList.contains('mist') ) {
                 if (mapData[newY][newX] === 'M') {
                     const monster = monsters.find(monster => monster.x === newX && monster.y === newY);
                     if (monster) {
@@ -260,7 +291,7 @@
                     map.children[player.y].children[player.x].classList.add('player');  
 					mapData[player.y][player.x] = 'P';
 				}
-            } 
+            }  
 			
 			monsters.forEach(element => {     
 						var xMove = Math.round(Math.random());
@@ -284,7 +315,10 @@
 							map.children[element.y].children[element.x].classList.remove('monster'); 
 							element.x = newMx;
 							element.y = newMy;
-							map.children[element.y].children[element.x].classList.add('monster');  
+                            if(!map.children[element.y].children[element.x].classList.contains('mist'))
+                            {
+                                map.children[element.y].children[element.x].classList.add('monster');  
+							}
 							mapData[element.y][element.x] = 'M';
 						}
 						
