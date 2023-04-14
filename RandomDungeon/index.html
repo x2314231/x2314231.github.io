@@ -62,11 +62,17 @@
 		}
 		.status {
 			font-size: 30px;
+			border:1px solid #989898; 
+			width: 96%; 
+			padding: 5px;
+			margin: 5px;  
 		}
 		.log {
+			border:3px solid #989898; 
 			font-size: 10px;
-			width: 98%;
-			height: 80px;
+			width: 97%;
+			height: 120px;
+			margin-bottom: 2px;
 		} 
 		@keyframes blink {
 			0% {
@@ -378,15 +384,21 @@
                 } else if (mapData[newY][newX] === 'T') {
 					
 					const treasure = treasures.find(treasure => treasure.x === newX && treasure.y === newY);
-					if(player.hp + treasure.hp > player.maxHp)
-					{
-						log.value += `The treasure will +${treasure.hp},your hp is full!`;
-						return;
-					}
+					 
                     player.hp+=treasure.hp;
+					if(player.hp > player.maxHp)
+					{
+						player.hp = player.maxHp
+					}
                     player.atk+=treasure.atk;
-                    player.def+=treasure.def; 
-					log.value += `Got Treasure!hp+${treasure.hp} atk+${treasure.atk} def+${treasure.def}!\n`;
+                    player.def+=treasure.def;
+
+					log.value += `Got ${treasure.hp > 0 ? "Potion! Hp + "+treasure.hp:""}`+
+									 `${treasure.atk > 0 ? "Weapon! Attack + "+treasure.atk:""}`+
+									 `${treasure.def > 0 ? "Armor! Defence + "+treasure.def:""}`+
+									 `!\n`;
+									 
+					log.scrollTop = log.scrollHeight;
                     updateStatus();
                     mapData[newY][newX] = '.';
                     map.children[newY].children[newX].classList.remove('treasure');
