@@ -126,14 +126,14 @@
 		
         const bossData = { 
 			maxHp : 50,
-            hp: 50,
-            atk: 8,
+            hp: 60,
+            atk: 12,
             def: 0
         }; 
         const player = { 
 			maxHp :100,
             hp: 100,
-            atk: 10,
+            atk: 7,
             def: 0
         };
 
@@ -157,15 +157,15 @@
 						//cell.classList.add('wall');
 					} else if (Math.random() > 0.9) {
 						mapData[y].push('M'); 
-						var monsterHp = Math.floor(Math.random() * 30) + 5; 
+						var monsterHp = Math.floor(Math.random() * 25) + 5; 
 						var monster = {
 							sn:monsters.length+1,
 							x,
 							y,
 							maxHp : monsterHp,
 							hp: monsterHp,
-							atk: Math.floor(Math.random() * 5) + 1,
-							def: Math.floor(Math.random() * 3) + 1, 
+							atk: Math.floor(Math.random() * 7) + 1,
+							def: Math.floor(Math.random() * 4) , 
 						};						
 						cell.textContent = monster.atk;
 						monsters.push(monster);    
@@ -177,9 +177,9 @@
 						treasures.push({
 							x,
 							y,
-							hp: treasureType >= 0.7 ?  Math.floor(Math.random() * 10) + 5 : 0 ,
-							atk: (0.3 < treasureType && treasureType < 0.7) ? Math.floor(Math.random() * 3)+1 : 0,
-							def: treasureType <= 0.3 ? Math.floor(Math.random() * 3) + 1 : 0
+							hp: treasureType >= 0.6 ?  Math.floor(Math.random() * 15) + 5 : 0 ,
+							atk: (0.3 < treasureType && treasureType < 0.6) ? Math.floor(Math.random() * 4 ) + 1 : 0,
+							def: treasureType <= 0.3 ? Math.floor(Math.random() * 4) + 1 : 0
 						});
 						//cell.classList.add('treasure');
 					} else {
@@ -224,8 +224,8 @@
 			
 			const indexMonster = monsters.findIndex(monster => monster === defender); 
 			if(indexMonster !== -1)
-			{
-				map.children[defender.y].children[defender.x].querySelector('.monsterHealthBar').width = `calc(100% *( ${defender.hp/defender.maxHp}))`;
+			{	
+				map.children[defender.y].children[defender.x].querySelector('.monsterHealthBar').style.width = `calc(100% *( ${defender.hp/defender.maxHp}))`;
 			}
 			
 			if (defender.hp <= 0) {
