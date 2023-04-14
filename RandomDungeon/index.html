@@ -153,10 +153,9 @@
 						//cell.classList.add('treasure');
 					} else {
 						mapData[y].push('.'); 
-					}
-
-					cell.style.width = `calc(98% /${width}})`;
-					cell.height = cell.width;
+					} 
+					cell.style.width = `calc(100% /${width})`;
+					cell.style.height = cell.style.width;
 					cell.classList.add('mist');
 					row.appendChild(cell);
 				}
