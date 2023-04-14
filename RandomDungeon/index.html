@@ -18,8 +18,19 @@
         .monster {
             background-image: url("./monster.png");
     		background-size: cover;
+			font-size: 35px;
+			vertical-align: top;
+ 			text-align: left;
+			color:red;
 			/* background-image: url("https://drive.google.com/uc?export=view&id=1QctgmYWrojpsFWmUIsfVU8mP6r-8hL3z"); */
         }
+		.monsterHealthBar {
+			background-color: red;
+		    opacity: 0.75;
+			height: 10px; 
+			border-radius: 5px;
+			vertical-align: bottom;
+		}
         .treasure {
             background-image: url("./treasure.png");
     		background-size: cover;
@@ -46,6 +57,12 @@
             background-color: black;
             opacity: 0.5; 
         }
+		.healthBarMonster {
+			background-color: red;
+		    opacity: 0.75;
+			height: 10px; 
+			border-radius: 5px;
+		}
 		.healthBar { 
 			background-color: red;
 		    opacity: 0.75;
@@ -106,7 +123,9 @@
         const treasures = []; 
         const touchSlideDistance = 100;
 		var defeatedBossCount = 0;
+		
         const bossData = { 
+			maxHp : 50,
             hp: 50,
             atk: 8,
             def: 0
@@ -138,23 +157,29 @@
 						//cell.classList.add('wall');
 					} else if (Math.random() > 0.9) {
 						mapData[y].push('M'); 
-						monsters.push({
+						var monsterHp = Math.floor(Math.random() * 30) + 5; 
+						var monster = {
+							sn:monsters.length+1,
 							x,
 							y,
-							hp: Math.floor(Math.random() * 20) + 10,
+							maxHp : monsterHp,
+							hp: monsterHp,
 							atk: Math.floor(Math.random() * 5) + 1,
-							def: Math.floor(Math.random() * 3) 
-						});  
-						//cell.classList.add('monster');
+							def: Math.floor(Math.random() * 3) + 1, 
+						};						
+						cell.textContent = monster.atk;
+						monsters.push(monster);    
+						//cell.classList.add('monster'); 
+
 					} else if (Math.random() < 0.08) {
 						mapData[y].push('T'); 
 						var treasureType = Math.random();  
 						treasures.push({
 							x,
 							y,
-							hp: treasureType >= 0.7 ?  Math.floor(Math.random() * 10)+5 : 0 ,
-							atk: (0.3 < treasureType && treasureType < 0.7) ? Math.floor(Math.random() * 3) : 0,
-							def: treasureType <= 0.3 ? Math.floor(Math.random() * 3) : 0
+							hp: treasureType >= 0.7 ?  Math.floor(Math.random() * 10) + 5 : 0 ,
+							atk: (0.3 < treasureType && treasureType < 0.7) ? Math.floor(Math.random() * 3)+1 : 0,
+							def: treasureType <= 0.3 ? Math.floor(Math.random() * 3) + 1 : 0
 						});
 						//cell.classList.add('treasure');
 					} else {
@@ -195,19 +220,28 @@
 			const damage = Math.max(0, attacker.atk - defender.def);
             defender.hp -= damage;  
             log.value += `${attacker === player ? 'Player' : 'Enemy'} Attck!Dealing ${damage} damage to ${defender === player ? 'Player' : 'Enemy'}\n`;
-            if (defender.hp <= 0) {
+			
+			
+			const indexMonster = monsters.findIndex(monster => monster === defender); 
+			if(indexMonster !== -1)
+			{
+				map.children[defender.y].children[defender.x].querySelector('.monsterHealthBar').width = `calc(100% *( ${defender.hp/defender.maxHp}))`;
+			}
+			
+			if (defender.hp <= 0) {
                 if (defender === player) { 
 					GameOverAsk('Game Over!Restart?');
                 }else { 
                     log.value += 'Enemy is defeated!\n';
 					mapData[defender.y][defender.x] = '.';
 
-					const indexMonster = monsters.findIndex(monster => monster === defender); 
 					const indexBoss = bosses.findIndex(boss => boss === defender); 
 					if(indexMonster !== -1)
 					{
 						monsters.splice(indexMonster, 1); 
+						map.children[defender.y].children[defender.x].textContent = '';
 						map.children[defender.y].children[defender.x].classList.remove('monster');
+						
 					}
 					else if(indexBoss !== -1)
 					{
@@ -223,7 +257,7 @@
 						,1000);
 					} 
 					
-					if(monsters.length == 15	 && defeatedBossCount <= 0)
+					if(monsters.length == 15 && defeatedBossCount <= 0)
 					{
 						BossComing();
 					}
@@ -418,10 +452,11 @@
 		function MonsterMove(){
 		
 			monsters.forEach(element => {     
-						var xMove = Math.round(Math.random());
-						var yMove = Math.round(Math.random()); 
-						var newMx = Math.random() > 0.5 ? element.x + xMove : element.x - xMove;
-						var newMy = Math.random() > 0.5 ? element.y + yMove : element.y - yMove;
+						
+						var XorY = Math.random();  
+						var Move = Math.random() > 0.5 ? -1 : 1;  
+						var newMx = XorY > 0.5 ? element.x + Move : element.x;
+						var newMy = XorY <= 0.5 ? element.y + Move : element.y;
 		
 						if(newMy === player.y && newMx === player.x)
 						{
@@ -436,12 +471,18 @@
 						   )
 						{
 							mapData[element.y][element.x] = '.';
-							map.children[element.y].children[element.x].classList.remove('monster'); 
+							map.children[element.y].children[element.x].classList.remove('monster');  
+							map.children[element.y].children[element.x].textContent = ''; 
 							element.x = newMx;
 							element.y = newMy;
                             if(!map.children[element.y].children[element.x].classList.contains('mist'))
                             {
-                                map.children[element.y].children[element.x].classList.add('monster');  
+                                map.children[element.y].children[element.x].classList.add('monster'); 
+								map.children[element.y].children[element.x].textContent = element.atk;
+								const mHP = document.createElement('div'); 
+								mHP.className = 'monsterHealthBar';
+								map.children[element.y].children[element.x].append(mHP);  
+								mHP.style.width = `calc(100% *( ${element.hp/element.maxHp}))`; 
 							}
 							mapData[element.y][element.x] = 'M';
 						}
@@ -546,7 +587,25 @@
 					{x : targetX-1, y : targety+yWay}, 
 					{x : targetX  , y : targety},
 				];
+			}
+			else if(xWay !== 0 && yWay !== 0)
+			{
+				return [
+					{x : targetX+xWay , y : targety},
+					{x : targetX+xWay , y : targety+yWay},
+					{x : targetX	  , y : targety+yWay}, 
+					{x : targetX  	  , y : targety},
+				];
 			} 
+			else (xWay === 1 && yWay === 1)
+			{
+				return [
+					{x : targetX+xWay , y : targety},
+					{x : targetX+xWay , y : targety+yWay},
+					{x : targetX	  , y : targety+yWay}, 
+					{x : targetX  	  , y : targety},
+				];
+			}
 		}
 		
 		function ClearMist(x,y,xWay,yWay)
@@ -571,7 +630,13 @@
 							break;
 						}
 						case 'M':{
-							map.children[e.y].children[e.x].classList.add('monster');
+							map.children[e.y].children[e.x].classList.add('monster');  
+							const monster = monsters.find(monster => monster.x === e.x && monster.y === e.y);
+							map.children[e.y].children[e.x].textContent = monster.atk;
+							const mHP = document.createElement('div'); 
+							mHP.className = 'monsterHealthBar';	
+							map.children[e.y].children[e.x].append(mHP);  
+							mHP.style.width = `calc(100% *( ${monster.hp/monster.maxHp}))`; 
 							break;
 						}
 						case '.':{ 
