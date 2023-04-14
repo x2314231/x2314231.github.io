@@ -37,14 +37,16 @@
         }
 		.baseGround {
 			background-color:rgb(0,139,139);
-			width: 100%;
+			width: 98%;
     		aspect-ratio: 1 / 1;
+			border:5px solid #303030;  
+			margin-left: 3px;
 		}
         .mist {
             background-color: black;
             opacity: 0.5; 
         }
-		.healthBar{ 
+		.healthBar { 
 			background-color: red;
 		    opacity: 0.75;
 			height: 100%;
@@ -52,12 +54,20 @@
 			text-align: center;
 			border-radius: 14px;
 		}
-		.healthBarBoarder{
+		.healthBarBoarder {
 			border:3px solid #989898; 
 			border-radius: 16px;
 			height: 35px;
 			width: 98%; 
 		}
+		.status {
+			font-size: 30px;
+		}
+		.log {
+			font-size: 20px;
+			width: 98%;
+			height: 80px;
+		} 
 		@keyframes blink {
 			0% {
 			opacity: 0;
@@ -75,8 +85,8 @@
 	<div id ="hpBarBoarder" class="healthBarBoarder">
 		<div id="hpBar" class="healthBar"></div>
 	</div> 
-    <div id="status" ></div>
-	<textarea id="log" style="width: 469px; height: 67px;"></textarea>
+    <div id="status" class="status"></div>
+	<textarea id="log" class="log"style="width: 469px; height: 67px;"></textarea>
     <table id="map" class ="baseGround"></table>
     <script>
         const status = document.querySelector('#status');
@@ -145,7 +155,7 @@
 						mapData[y].push('.'); 
 					}
 
-					cell.style.width = `calc(100% /${width}})`;
+					cell.style.width = `calc(98% /${width}})`;
 					cell.height = cell.width;
 					cell.classList.add('mist');
 					row.appendChild(cell);
