@@ -7,45 +7,72 @@
         table {
             border-collapse: collapse;
         }
-        td {
-            width: 20px;
-            height: 20px;
+        td { 
             text-align: center;
         }
         .wall {
-			background-image: url("https://drive.google.com/uc?export=view&id=1YD9CHj8zRs-x-Sw00Fh_nmTFI9CyvqO_");
+            background-image: url("./wall.png");
+    		background-size: cover;
+			/* background-image: url("https://drive.google.com/uc?export=view&id=1YD9CHj8zRs-x-Sw00Fh_nmTFI9CyvqO_"); */
         }
         .monster {
-			background-image: url("https://drive.google.com/uc?export=view&id=1QctgmYWrojpsFWmUIsfVU8mP6r-8hL3z");
+            background-image: url("./monster.png");
+    		background-size: cover;
+			/* background-image: url("https://drive.google.com/uc?export=view&id=1QctgmYWrojpsFWmUIsfVU8mP6r-8hL3z"); */
         }
         .treasure {
-			background-image: url("https://drive.google.com/uc?export=view&id=1vUXivbstGGf8-MVaTo_hdK07IreEpjWQ");
+            background-image: url("./treasure.png");
+    		background-size: cover;
+			/* background-image: url("https://drive.google.com/uc?export=view&id=1vUXivbstGGf8-MVaTo_hdK07IreEpjWQ"); */
+        }
+        .boss {
+            background-image: url("./boss.png");
+    		background-size: cover;
         }
         .player {
-			background-image: url("https://drive.google.com/uc?export=view&id=1-6HhmroiJrkPUw2LhiDY-nb46K-kUYSA");
+            background-image: url("./player.png");
+    		background-size: cover;
+			/* background-image: url("https://drive.google.com/uc?export=view&id=1-6HhmroiJrkPUw2LhiDY-nb46K-kUYSA"); */
 			animation:blink 1.9s infinite
         }
 		.baseGround {
 			background-color:rgb(0,139,139);
+			width: 100%;
+    		aspect-ratio: 1 / 1;
 		}
         .mist {
             background-color: black;
-		    opacity: 0.5;
+            opacity: 0.5; 
         }
+		.healthBar{ 
+			background-color: red;
+		    opacity: 0.75;
+			height: 100%;
+		}
+		.healthBarBoarder{
+			border:1px solid #989898; 
+			border-radius: 16px;
+			height: 22px;
+			width: 100%;
+		}
 		@keyframes blink {
-		 0% {
-		  opacity: 0;
-		 }
-		 50% {
-		  opacity: 1;
-		 }
-		 100% {
-		  opacity: 0;
-		 }
+			0% {
+			opacity: 0;
+			}
+			50% {
+			opacity: 1;
+			}
+			100% {
+			opacity: 0;
+			}
+		 } 
     </style> 
 </head>
 <body>
-    <div id="status"></div> 
+	<div id ="hpBarBoarder" class="healthBarBoarder">
+		<div id="hpBar" class="healthBar"></div>
+	</div> 
+    <div id="status" ></div>
 	<textarea id="log" style="width: 469px; height: 67px;"></textarea>
     <table id="map" class ="baseGround"></table>
     <script>
@@ -53,90 +80,142 @@
         const log = document.querySelector('#log');
         const map = document.querySelector('#map');
         const width = 20;
-        const height = 20;
+        const height = 20; 
         const mapData = [];
         const monsters = [];
-        const treasures = [];
+        const bosses = [];
+        const treasures = []; 
         const touchSlideDistance = 100;
-
-        for (let y = 0; y < height; y++) {
-            mapData.push([]);
-            const row = document.createElement('tr');
-            for (let x = 0; x < width; x++) {
-                const cell = document.createElement('td');
-                cell.classList.add('mist');
-                if (Math.random() < 0.2) {
-                    mapData[y].push('#');  
-                } else if (Math.random() < 0.1) {
-					mapData[y].push('M'); 
-                    monsters.push({
-                        x,
-                        y,
-                        hp: Math.floor(Math.random() * 20) + 10,
-                        atk: Math.floor(Math.random() * 5) + 1,
-                        def: Math.floor(Math.random() * 3)
-                    });
-                } else if (Math.random() < 0.05) {
-                    mapData[y].push('T'); 
-					var treasureType = Math.random();   
-					treasures.push({
-                        x,
-                        y,
-                        hp: treasureType >= 0.7 ?  Math.floor(Math.random() * 10) : 0 ,
-                        atk: (0.3 < treasureType && treasureType < 0.7) ? Math.floor(Math.random() * 3) : 0,
-                        def: treasureType <= 0.3 ? Math.floor(Math.random() * 3) : 0
-                    });
-                } else {
-                    mapData[y].push('.'); 
-                }
-                row.appendChild(cell);
-            }
-            map.appendChild(row);
-        }
-
-        const player = {
-            x: 2,
-            y: Math.floor(height / 2),
+		var defeatedBossCount = 0;
+        const bossData = { 
+            hp: 50,
+            atk: 8,
+            def: 0
+        }; 
+        const player = { 
+			maxHp :100,
             hp: 100,
             atk: 10,
             def: 0
         };
-        updateStatus();
-        mapData[player.y][player.x] = 'P';  
-        map.children[player.y].children[player.x].classList.add('player');
 
-        function updateStatus() {
-            status.textContent = `HP: ${player.hp} ATK: ${player.atk} DEF: ${player.def}`;
+		init();
+
+		function init() { 
+			DrawMap();
+			AddPlayer();
+		} 
+
+		function DrawMap()
+		{
+			for (let y = 0; y < height; y++) {
+				mapData.push([]);
+				const row = document.createElement('tr');
+				for (let x = 0; x < width; x++) {
+					const cell = document.createElement('td'); 
+
+					if (Math.random() < 0.2) {
+						mapData[y].push('#');  
+						//cell.classList.add('wall');
+					} else if (Math.random() > 0.9) {
+						mapData[y].push('M'); 
+						monsters.push({
+							x,
+							y,
+							hp: Math.floor(Math.random() * 20) + 10,
+							atk: Math.floor(Math.random() * 5) + 1,
+							def: Math.floor(Math.random() * 3) 
+						});  
+						//cell.classList.add('monster');
+					} else if (Math.random() < 0.08) {
+						mapData[y].push('T'); 
+						var treasureType = Math.random();  
+						treasures.push({
+							x,
+							y,
+							hp: treasureType >= 0.7 ?  Math.floor(Math.random() * 10)+5 : 0 ,
+							atk: (0.3 < treasureType && treasureType < 0.7) ? Math.floor(Math.random() * 3) : 0,
+							def: treasureType <= 0.3 ? Math.floor(Math.random() * 3) : 0
+						});
+						//cell.classList.add('treasure');
+					} else {
+						mapData[y].push('.'); 
+					}
+
+					cell.style.width = `calc(100% /${width}})`;
+					cell.height = cell.width;
+					cell.classList.add('mist');
+					row.appendChild(cell);
+				}
+				map.appendChild(row);
+        	}  
+		} 
+
+		function AddPlayer()
+		{ 
+			updateStatus();
+			var x = 0;
+			var y = 0; 
+			do{
+				x = Math.floor(Math.random()* width);
+				y = Math.floor(Math.random()* height);
+			}
+			while(mapData[y][x] !== '.') 
+			player.x = x;
+			player.y = y;
+    	    mapData[player.y][player.x] = 'P';  
+        	map.children[player.y].children[player.x].classList.add('player');
+		}
+
+        function updateStatus() { 
+			hpBar.style.width = `calc(100% *( ${player.hp/player.maxHp}))`; 
+			hpBar.textContent = `HP: ${player.hp}`;
+            status.textContent = `ATK: ${player.atk} DEF: ${player.def}`;
         }
 
         function attack(attacker, defender) { 
 			const damage = Math.max(0, attacker.atk - defender.def);
-            defender.hp -= damage;
-            log.value += `${attacker === player ? 'Player' : 'Monster'} Attck!Dealing ${damage} damage to ${defender === player ? 'Player' : 'Monster'}\n`;
+            defender.hp -= damage;  
+            log.value += `${attacker === player ? 'Player' : 'Enemy'} Attck!Dealing ${damage} damage to ${defender === player ? 'Player' : 'Enemy'}\n`;
             if (defender.hp <= 0) {
-                if (defender === player) {
-                    alert('Game Over!');
-                }else {
-                    log.value += 'Monster is defeated!\n';
-                    const index = monsters.findIndex(monster => monster === defender);
-                    if (index !== -1) {
-                        monsters.splice(index, 1);
-                        mapData[defender.y][defender.x] = '.';
-                        map.children[defender.y].children[defender.x].classList.remove('monster');
-						
-						if(monsters.length == 0){
-							setTimeout(
-								function(){
-									alert('Dungeon Clear!');
-								}
-							,1000);
-						}
-                    }
+                if (defender === player) { 
+					GameOverAsk('Game Over!Restart?');
+                }else { 
+                    log.value += 'Enemy is defeated!\n';
+					mapData[defender.y][defender.x] = '.';
+
+					const indexMonster = monsters.findIndex(monster => monster === defender); 
+					const indexBoss = bosses.findIndex(boss => boss === defender); 
+					if(indexMonster !== -1)
+					{
+						monsters.splice(indexMonster, 1); 
+						map.children[defender.y].children[defender.x].classList.remove('monster');
+					}
+					else if(indexBoss !== -1)
+					{
+						bosses.splice(indexBoss, 1); 
+						map.children[defender.y].children[defender.x].classList.remove('boss'); 
+						defeatedBossCount++;
+					}
+					
+					if(monsters.length == 0 && bosses.length == 0 )
+					{
+						setTimeout(
+							GameOverAsk('Dungeon Clear!Restart?')
+						,1000);
+					} 
+					
+					if(monsters.length == 15	 && defeatedBossCount <= 0)
+					{
+						BossComing();
+					}
+
                 }
 				
             }
 			log.scrollTop = log.scrollHeight;
         }
+
 
         document.addEventListener('keydown', ControlEvent,false);
         document.addEventListener('touchstart', handleTouchStart,false); 
@@ -144,6 +223,8 @@
 
 		var xDown = null;                                                        
 		var yDown = null;
+		
+		
 
 		function getTouches(evt) { 
 		  return evt.touches ||             // browser API
@@ -162,7 +243,7 @@
             let newY = player.y;
 			let xWay = 0;
 			let yWay = 0;
-			
+
             if (event.key === 'ArrowUp') {
                 newY--;
 				yWay--;
@@ -175,7 +256,8 @@
             } else if (event.key === 'ArrowRight') {
                 newX++;
 				xWay++;
-            } else if (event.key === 'Space') {
+            } else if (event.code === 'Space') {
+				BossComing();
             }
 			
 			if (event.key === '2') {
@@ -254,7 +336,10 @@
                 yDown = null;
             }
 			PlayerMove(newX,newY,xWay,yWay);
+			MonsterMove();
+			BossMove(newX,newY);
         } 
+		
 		
 		function PlayerMove(newX,newY,xWay,yWay)
 		{ 
@@ -264,7 +349,14 @@
                 newY >= 0 && newY < height && 
                 mapData[newY][newX] !== '#' && 
                 !map.children[newY].children[newX].classList.contains('mist') ) {
-                if (mapData[newY][newX] === 'M') {
+                
+                if (mapData[newY][newX] === 'B') { 
+                    const boss = bosses.find(boss => boss.x === newX && boss.y === newY);
+                    attack(player, boss);
+                    attack(boss, player);
+                    updateStatus();
+                }
+                else if (mapData[newY][newX] === 'M') {
                     const monster = monsters.find(monster => monster.x === newX && monster.y === newY);
                     if (monster) {
                         attack(player, monster);
@@ -274,6 +366,11 @@
                 } else if (mapData[newY][newX] === 'T') {
 					
 					const treasure = treasures.find(treasure => treasure.x === newX && treasure.y === newY);
+					if(player.hp + treasure.hp > player.maxHp)
+					{
+						log.value += `The treasure will +${treasure.hp},your hp is full!`;
+						return;
+					}
                     player.hp+=treasure.hp;
                     player.atk+=treasure.atk;
                     player.def+=treasure.def; 
@@ -281,6 +378,7 @@
                     updateStatus();
                     mapData[newY][newX] = '.';
                     map.children[newY].children[newX].classList.remove('treasure');
+					
                 } else { 
 					mapData[player.y][player.x] = '.';
                     map.children[player.y].children[player.x].classList.remove('player');
@@ -291,14 +389,15 @@
 				}
             }  
 			
+		}
+		
+		function MonsterMove(){
+		
 			monsters.forEach(element => {     
 						var xMove = Math.round(Math.random());
 						var yMove = Math.round(Math.random()); 
 						var newMx = Math.random() > 0.5 ? element.x + xMove : element.x - xMove;
-						var newMy = 0;
-						// x沒有動再動y，總之避免怪物斜走
-						if(xMove === 0)
-							newMy = Math.random() > 0.5 ? element.y + yMove : element.y - yMove;
+						var newMy = Math.random() > 0.5 ? element.y + yMove : element.y - yMove;
 		
 						if(newMy === player.y && newMx === player.x)
 						{
@@ -325,6 +424,68 @@
 						
 					}); 
 		}
+		
+		
+		function BossMove(targetX,targetY){
+			 
+			bosses.forEach(boss => {     
+				var XorY = Math.random(); 
+				var xWay = boss.x - targetX > 0 ? -1:1; 
+				var yWay = boss.y - targetY > 0 ? -1:1;
+				var newMx = XorY >  0.5 ? boss.x + xWay:boss.x;
+				var newMy = XorY <= 0.5 ? boss.y + yWay:boss.y;
+
+				if(newMy === player.y && newMx === player.x)
+				{
+					attack(player, boss);
+					attack(boss, player);
+					updateStatus();
+				}
+				else if(newMx >= 0 && newMx < width && newMy >= 0 && newMy < height &&
+						mapData[newMy][newMx] !== '#' &&
+						mapData[newMy][newMx] !== 'T' &&
+						mapData[newMy][newMx] !== 'M' 
+				)
+				{ 
+					mapData[boss.y][boss.x] = '.';
+					map.children[boss.y].children[boss.x].classList.remove('boss'); 
+					boss.x = newMx;
+					boss.y = newMy;
+					if(!map.children[boss.y].children[boss.x].classList.contains('mist'))
+					{
+						map.children[boss.y].children[boss.x].classList.add('boss');  
+					}
+					mapData[boss.y][boss.x] = 'B';
+				} 
+			});
+		}
+		
+		function BossComing()
+		{ 
+			alert('Boss Coming!!!');
+			var comingX = 0;
+			var comingY = 0; 
+			do{
+				comingX = Math.floor(Math.random()* width);
+				comingY = Math.floor(Math.random()* height);
+			}
+			while(mapData[comingX][comingY] !== '.') 
+			
+			mapData[comingY][comingX] = 'B';
+			if(!map.children[comingY].children[comingX].classList.contains('mist'))
+			{
+				map.children[comingY].children[comingX].classList.add('boss');
+			}  
+			bosses.push({
+				x:comingX,
+				y:comingY,
+				hp: bossData.hp,
+				atk: bossData.atk,
+				def: bossData.def
+			}); 
+
+		}
+
 		
 		function GetRound(targetX,targety)
 		{
@@ -395,6 +556,13 @@
 					} 
 				}
 			}); 
+		}
+		
+		function GameOverAsk(msg)
+		{
+			if (confirm(msg)) {
+				location.reload();
+			} 
 		}
     </script>
 </body>
